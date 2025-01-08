@@ -14,7 +14,8 @@ export const commentFlag =
  * @see useContentMeta.tsx
  */
 export const contentMetaFlag =
-  isProd || process.env.NEXT_PUBLIC_FLAG_CONTENT_META === 'true';
+  (process.env.NEXT_PUBLIC_FLAG_CONTENT_META !== 'false' && isProd) ||
+  process.env.NEXT_PUBLIC_FLAG_CONTENT_META === 'true';
 
 /**
  * Increment content views

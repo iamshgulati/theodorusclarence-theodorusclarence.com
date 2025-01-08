@@ -9,6 +9,8 @@ With the revamp in November 2024, the new design and animations repository will 
 
 This repository will remain open-sourced for you to see the structure and the tech stack I used. There's no significant changes aside from the new design.
 
+If you need to see the old version of the website, you can check them on [old.theodorusclarence.com](https://old.theodorusclarence.com). Do note that the view & like count features are disabled.
+
 ## Notable Features
 
 This website was first initialized in January 2021, went through numerous changes and refactors, resulted to some notable features
