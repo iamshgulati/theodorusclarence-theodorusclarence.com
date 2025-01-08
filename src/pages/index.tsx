@@ -3,18 +3,18 @@ import { InferGetStaticPropsType } from 'next';
 import * as React from 'react';
 import { IoArrowDownOutline } from 'react-icons/io5';
 import { IoNewspaperSharp } from 'react-icons/io5';
-import { SiGithub, SiTwitter } from 'react-icons/si';
+import { SiBluesky, SiGithub, SiX } from 'react-icons/si';
 import { InView } from 'react-intersection-observer';
 
 import { trackEvent } from '@/lib/analytics';
-import { getAllFilesFrontmatter, getFeatured } from '@/lib/mdx';
+import { getAllFilesFrontmatter, getFeatured } from '@/lib/mdx.server';
 import { generateRss } from '@/lib/rss';
 import useInjectContentMeta from '@/hooks/useInjectContentMeta';
 import useLoaded from '@/hooks/useLoaded';
 
 import Accent from '@/components/Accent';
 import BlogCard from '@/components/content/blog/BlogCard';
-import LibraryCard from '@/components/content/library/LibraryCard';
+import ShortsCard from '@/components/content/card/ShortsCard';
 import ProjectCard from '@/components/content/projects/ProjectCard';
 import Layout from '@/components/layout/Layout';
 import ButtonLink from '@/components/links/ButtonLink';
@@ -27,13 +27,13 @@ import Tooltip from '@/components/Tooltip';
 export default function IndexPage({
   featuredPosts,
   featuredProjects,
-  featuredLibrary,
+  featuredShorts,
   introPosts,
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   const populatedPosts = useInjectContentMeta('blog', featuredPosts);
   const populatedIntro = useInjectContentMeta('blog', introPosts);
   const populatedProjects = useInjectContentMeta('projects', featuredProjects);
-  const populatedLibrary = useInjectContentMeta('library', featuredLibrary);
+  const populatedShorts = useInjectContentMeta('library', featuredShorts);
 
   const isLoaded = useLoaded();
 
@@ -59,6 +59,18 @@ export default function IndexPage({
               You can call me <Accent>Clarence</Accent>
             </h1>
             <p
+              className='mt-2 max-w-4xl leading-relaxed text-gray-700 dark:text-gray-200 md:mt-3 text-sm md:text-base 2xl:text-lg'
+              data-fade='2'
+              onClick={() => {
+                trackEvent('Social Link: Dimension', { type: 'link' });
+              }}
+            >
+              Front-end Engineer at{' '}
+              <CustomLink href='https://dimension.dev/?ref=theodorusclarence.com'>
+                Dimension
+              </CustomLink>
+            </p>
+            <p
               className={clsx(
                 'mt-4 max-w-4xl text-gray-700 dark:text-gray-200 md:mt-6',
                 'md:text-lg 2xl:text-xl'
@@ -68,6 +80,7 @@ export default function IndexPage({
               I work with React Ecosystem, and write to teach people how to
               rebuild and redefine fundamental concepts through mental models.
             </p>
+
             <p
               className='mt-3 max-w-4xl leading-relaxed text-gray-700 dark:text-gray-200 md:mt-4 md:text-lg 2xl:text-xl'
               data-fade='4'
@@ -123,8 +136,23 @@ export default function IndexPage({
                   trackEvent('Social Link: Twitter', { type: 'link' });
                 }}
               >
-                <SiTwitter className='shrink-0 transition-colors group-hover:text-[#1da1f2]' />
+                <SiX className='shrink-0 transition-colors group-hover:text-black dark:group-hover:text-white' />
                 <span>@th_clarence</span>
+              </UnstyledLink>
+              <UnstyledLink
+                href='https://clarence.link/bsky'
+                className={clsx(
+                  'inline-flex items-center gap-1 text-sm font-medium md:text-base',
+                  'group text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white',
+                  'focus:outline-none focus-visible:ring focus-visible:ring-primary-300',
+                  'transition-colors'
+                )}
+                onClick={() => {
+                  trackEvent('Social Link: Bluesky', { type: 'link' });
+                }}
+              >
+                <SiBluesky className='shrink-0 transition-colors group-hover:text-[#0285FF]' />
+                <span>@theodorusclarence.com</span>
               </UnstyledLink>
               <UnstyledLink
                 href='https://github.com/theodorusclarence'
@@ -309,28 +337,29 @@ export default function IndexPage({
             >
               <article className='layout' data-fade='0'>
                 <h2 className='text-2xl md:text-4xl' id='library'>
-                  <Accent>Library of Code Snippets</Accent>
+                  <Accent>Shorts</Accent>
                 </h2>
                 <p className='mt-2 text-gray-600 dark:text-gray-300'>
-                  List of code snippets that I store for easy access.
+                  Short article that's not long enough to be a blog post,
+                  usually comes from my personal notes.
                 </p>
                 <ul className='mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>
-                  {populatedLibrary.map((snippet, i) => (
-                    <LibraryCard
-                      key={snippet.slug}
-                      snippet={snippet}
+                  {populatedShorts.map((short, i) => (
+                    <ShortsCard
+                      key={short.slug}
+                      short={short}
                       className={clsx(i > 2 && 'hidden sm:block')}
                     />
                   ))}
                 </ul>
                 <ButtonLink
                   className='mt-4'
-                  href='/library'
+                  href='/shorts'
                   onClick={() =>
-                    trackEvent('Home: See more snippets', { type: 'navigate' })
+                    trackEvent('Home: See more shorts', { type: 'navigate' })
                   }
                 >
-                  See more snippets
+                  See more shorts
                 </ButtonLink>
               </article>
             </section>
@@ -346,28 +375,28 @@ export async function getStaticProps() {
 
   const blogs = await getAllFilesFrontmatter('blog');
   const projects = await getAllFilesFrontmatter('projects');
-  const library = await getAllFilesFrontmatter('library');
+  const shorts = await getAllFilesFrontmatter('library');
 
   const featuredPosts = getFeatured(blogs, [
-    'nextjs-boilerplate-2023',
-    'nextjs-auth-hoc',
-    '2022-retrospective',
+    'gradient-border-is-hard',
+    'advanced-react-patterns',
+    'fully-reusable-components',
     'react-core-concept-rendering-state',
+    'nextjs-auth-hoc',
     'nextjs-fetch-method',
-    'one-stop-starter',
   ]);
   const featuredProjects = getFeatured(projects, [
     'hexcape',
     'notiolink',
     'ppdbsumsel',
   ]);
-  const featuredLibrary = getFeatured(library, [
-    'absolute-import',
+  const featuredShorts = getFeatured(shorts, [
+    'react/absolute-import',
     'auth-context',
-    'conventional-commit-readme',
-    'husky-commitlint-prettier',
-    'toast',
-    'tailwindcss-basestyle',
+    'mac/zsh',
+    'react/jsx-one-parent',
+    'styling/margin-usage',
+    'uncategorized/search-removal',
   ]);
 
   const introPosts = getFeatured(blogs, [
@@ -376,6 +405,11 @@ export async function getStaticProps() {
   ]);
 
   return {
-    props: { featuredPosts, featuredProjects, featuredLibrary, introPosts },
+    props: {
+      featuredPosts,
+      featuredProjects,
+      featuredShorts,
+      introPosts,
+    },
   };
 }

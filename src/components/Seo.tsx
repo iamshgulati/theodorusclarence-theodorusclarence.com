@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
-import { openGraph } from '@/lib/helper';
+import { openGraph } from '@/lib/helper.client';
 
 const defaultMeta = {
   title: 'Theodorus Clarence',
@@ -20,6 +20,7 @@ type SeoProps = {
   isBlog?: boolean;
   banner?: string;
   canonical?: string;
+  tags?: string;
 } & Partial<typeof defaultMeta>;
 
 export default function Seo(props: SeoProps) {
@@ -40,6 +41,7 @@ export default function Seo(props: SeoProps) {
     templateTitle: props.templateTitle,
     banner: props.banner,
     isBlog: props.isBlog,
+    tags: props.tags,
   });
 
   return (
@@ -78,6 +80,28 @@ export default function Seo(props: SeoProps) {
             content='Theodorus Clarence'
           />
         </>
+      )}
+      {meta.isBlog && (
+        <script
+          key='structured-data'
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BlogPosting',
+              headline: meta.title,
+              description: meta.description,
+              author: [
+                {
+                  '@type': 'Person',
+                  name: 'Theodorus Clarence',
+                },
+              ],
+              image: meta.image,
+              datePublished: meta.date,
+            }),
+          }}
+        />
       )}
 
       {/* Favicons */}

@@ -27,11 +27,11 @@ class MyDocument extends Document {
             async
             defer
             data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || ''}
-            src='https://umami.thcl.dev/umami.js'
+            src='https://umami.thcl.dev/script.js'
             data-domains='theodorusclarence.com'
           />
         </Head>
-        <body className='bg-white transition-colors dark:bg-dark dark:text-white'>
+        <body className='bg-white antialiased transition-colors dark:bg-dark dark:text-white'>
           <Main />
           <NextScript />
         </body>

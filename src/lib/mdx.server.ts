@@ -1,13 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { readdirSync, readFileSync } from 'fs';
+import { promises, readFileSync } from 'fs';
 import matter from 'gray-matter';
 import { bundleMDX } from 'mdx-bundler';
 import { join } from 'path';
 import readingTime from 'reading-time';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
-import rehypePrism from 'rehype-prism-plus';
+import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
+
+import { sortByDate } from '@/lib/mdx.client';
 
 import {
   ContentType,
@@ -15,8 +16,16 @@ import {
   PickFrontmatter,
 } from '@/types/frontmatters';
 
-export async function getFiles(type: ContentType) {
-  return readdirSync(join(process.cwd(), 'src', 'contents', type));
+export async function getFileSlugArray(type: ContentType) {
+  return getFileList(join(process.cwd(), 'src', 'contents', type)).then(
+    (paths) =>
+      paths.map((path) =>
+        path
+          .replace(join(process.cwd(), 'src', 'contents', type) + '/', '')
+          .replace('.mdx', '')
+          .split('/')
+      )
+  );
 }
 
 export async function getFileBySlug(type: ContentType, slug: string) {
@@ -37,7 +46,10 @@ export async function getFileBySlug(type: ContentType, slug: string) {
       options.rehypePlugins = [
         ...(options?.rehypePlugins ?? []),
         rehypeSlug,
-        rehypePrism,
+        () =>
+          rehypePrettyCode({
+            theme: 'css-variables',
+          }),
         [
           rehypeAutolinkHeadings,
           {
@@ -63,20 +75,34 @@ export async function getFileBySlug(type: ContentType, slug: string) {
   };
 }
 
-export async function getAllFilesFrontmatter<T extends ContentType>(type: T) {
-  const files = readdirSync(join(process.cwd(), 'src', 'contents', type));
+const getFileList = async (dirName: string) => {
+  let files: string[] = [];
+  const items = await promises.readdir(dirName, { withFileTypes: true });
 
-  return files.reduce((allPosts: Array<PickFrontmatter<T>>, postSlug) => {
-    const source = readFileSync(
-      join(process.cwd(), 'src', 'contents', type, postSlug),
-      'utf8'
-    );
+  for (const item of items) {
+    if (item.isDirectory()) {
+      files = [...files, ...(await getFileList(`${dirName}/${item.name}`))];
+    } else {
+      files.push(`${dirName}/${item.name}`);
+    }
+  }
+
+  return files;
+};
+
+export async function getAllFilesFrontmatter<T extends ContentType>(type: T) {
+  const files = await getFileList(join(process.cwd(), 'src', 'contents', type));
+
+  return files.reduce((allPosts: Array<PickFrontmatter<T>>, absolutePath) => {
+    const source = readFileSync(absolutePath, 'utf8');
     const { data } = matter(source);
 
     const res = [
       {
         ...(data as PickFrontmatter<T>),
-        slug: postSlug.replace('.mdx', ''),
+        slug: absolutePath
+          .replace(join(process.cwd(), 'src', 'contents', type) + '/', '')
+          .replace('.mdx', ''),
         readingTime: readingTime(source),
       },
       ...allPosts,
@@ -97,9 +123,10 @@ export async function getRecommendations(currSlug: string) {
     .sort(() => Math.random() - 0.5);
 
   // Find with similar tags
-  const recommendations = otherFms.filter((op) =>
+  const _recommendations = otherFms.filter((op) =>
     op.tags.split(',').some((p) => currentFm?.tags.split(',').includes(p))
   );
+  const recommendations = sortByDate(_recommendations);
 
   // Populate with random recommendations if not enough
   const threeRecommendations =

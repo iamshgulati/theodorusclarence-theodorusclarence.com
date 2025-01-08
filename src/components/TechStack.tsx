@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 import * as React from 'react';
-import { IoLogoVercel } from 'react-icons/io5';
 import {
   SiNextdotjs,
-  SiNodedotjs,
+  SiPrisma,
   SiReact,
+  SiReactquery,
   SiTailwindcss,
   SiTypescript,
 } from 'react-icons/si';
@@ -39,7 +39,7 @@ const stacks = [
       <>
         <CustomLink href='https://nextjs.org'>Next.js</CustomLink>, currently my
         go-to framework because of the static generation, dynamic paths, and
-        built-in api.
+        built-in API. <em>ps: I like pages folder better than the new one.</em>
       </>
     ),
   },
@@ -48,9 +48,8 @@ const stacks = [
     icon: SiReact,
     tooltip: (
       <>
-        <CustomLink href='https://reactjs.org/'>Create React App</CustomLink>,
-        first frontend framework that I learned, great if you are making an
-        authenticated website.
+        <CustomLink href='https://reactjs.org/'>React</CustomLink>, underlying
+        library of Next.js. I love the declarative approach and the ecosystem.
       </>
     ),
   },
@@ -62,11 +61,11 @@ const stacks = [
         <CustomLink href='https://www.typescriptlang.org/'>
           TypeScript
         </CustomLink>
-        , finally jumping on this one, I love the experience! Check out my{' '}
+        , can't live without it! Check out my{' '}
         <CustomLink href='https://github.com/theodorusclarence/ts-nextjs-tailwind-starter'>
           starter template
         </CustomLink>{' '}
-        using Next.js, Tailwind CSS, and TypeScript
+        using Next.js, Tailwind CSS, and TypeScript.
       </>
     ),
   },
@@ -86,27 +85,26 @@ const stacks = [
     ),
   },
   {
-    id: 'vercel',
-    icon: IoLogoVercel,
+    id: 'react-query',
+    icon: SiReactquery,
     tooltip: (
       <>
-        <CustomLink href='https://swr.vercel.app/'>SWR by Vercel</CustomLink>,
-        great react hooks for data fetching and caching, the{' '}
-        <CustomLink href='https://swr.vercel.app/docs/revalidation#revalidate-on-focus'>
-          revalidate on focus
-        </CustomLink>{' '}
-        is unreal. react-query is also a great alternative to this.
+        <CustomLink href='https://tanstack.com/'>TanStack Query</CustomLink>,
+        great react hooks for data fetching and caching. I maintain most of my
+        API fetch (get, post, put, delete) in this library.
       </>
     ),
   },
   {
-    id: 'node',
-    icon: SiNodedotjs,
+    id: 'prisma',
+    icon: SiPrisma,
     tooltip: (
       <>
-        <CustomLink href='https://nodejs.org/'>Node.js</CustomLink>, simple
-        backend language so you don't need to learn another language. Not using
-        this too often because Next.js already has a backend built-in.
+        <CustomLink href='https://www.prisma.io/?via=clarence'>
+          Prisma
+        </CustomLink>
+        , great and simple ORM. A little bit of documentation and you're good to
+        go.
       </>
     ),
   },

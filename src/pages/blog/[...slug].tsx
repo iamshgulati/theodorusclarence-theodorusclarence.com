@@ -2,18 +2,24 @@ import clsx from 'clsx';
 import { format } from 'date-fns';
 import { getMDXComponent } from 'mdx-bundler/client';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { ParsedUrlQuery } from 'querystring';
 import * as React from 'react';
 import { HiOutlineClock, HiOutlineEye } from 'react-icons/hi';
 import { MdHistory } from 'react-icons/md';
 
 import { trackEvent } from '@/lib/analytics';
-import { cleanBlogPrefix } from '@/lib/helper';
-import { getFileBySlug, getFiles, getRecommendations } from '@/lib/mdx';
+import { cleanBlogPrefix } from '@/lib/helper.client';
+import {
+  getFileBySlug,
+  getFileSlugArray,
+  getRecommendations,
+} from '@/lib/mdx.server';
 import useContentMeta from '@/hooks/useContentMeta';
 import useInjectContentMeta from '@/hooks/useInjectContentMeta';
 import useScrollSpy from '@/hooks/useScrollspy';
 
 import Accent from '@/components/Accent';
+import CarbonAds from '@/components/CarbonAds';
 import BlogCard from '@/components/content/blog/BlogCard';
 import SubscribeCard from '@/components/content/blog/SubscribeCard';
 import Comment from '@/components/content/Comment';
@@ -52,10 +58,11 @@ export default function SingleBlogPage({
   //#region  //*=========== Link Constants ===========
   const COMMIT_HISTORY_LINK = `https://github.com/theodorusclarence/theodorusclarence.com/commits/main/src/contents/blog/${frontmatter.slug}.mdx`;
   const GITHUB_EDIT_LINK = `https://github.com/theodorusclarence/theodorusclarence.com/blob/main/src/contents/blog/${frontmatter.slug}.mdx`;
-  const OG_BANNER_LINK = `https://res.cloudinary.com/theodorusclarence/image/upload/f_auto,c_fill,ar_4:5,w_1200/theodorusclarence/banner/${frontmatter.banner}`;
+  const OG_BANNER_LINK = `https://res.cloudinary.com/theodorusclarence/image/upload/f_auto,g_auto,c_fill,ar_4:5,w_1200/theodorusclarence/banner/${frontmatter.banner}`;
   //#endregion  //*======== Link Constants ===========
 
   //#region  //*=========== Blog Language ===========
+  // TODO: add implementation, should be bugged if folder/id-slug.mdx
   const cleanSlug = cleanBlogPrefix(frontmatter.slug);
   const isEnglish = cleanSlug === frontmatter.slug;
   //#endregion  //*======== Blog Language ===========
@@ -99,6 +106,7 @@ export default function SingleBlogPage({
           frontmatter.lastUpdated ?? frontmatter.publishedAt
         ).toISOString()}
         canonical={frontmatter.repost}
+        tags={frontmatter.tags}
       />
 
       <main>
@@ -218,6 +226,8 @@ export default function SingleBlogPage({
               title={frontmatter.title}
             />
 
+            <CarbonAds className='mt-8' />
+
             <figure className='mt-12'>
               <Comment key={frontmatter.slug} />
             </figure>
@@ -257,23 +267,26 @@ export default function SingleBlogPage({
   );
 }
 export const getStaticPaths: GetStaticPaths = async () => {
-  const posts = await getFiles('blog');
+  const posts = await getFileSlugArray('blog');
 
   return {
-    paths: posts.map((p) => ({
+    paths: posts.map((slug) => ({
       params: {
-        slug: p.replace(/\.mdx/, ''),
+        slug,
       },
     })),
     fallback: false,
   };
 };
 
+interface Params extends ParsedUrlQuery {
+  slug: string[];
+}
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const post = await getFileBySlug('blog', params?.slug as string);
+  const { slug } = params as Params;
 
-  const recommendations = await getRecommendations(params?.slug as string);
+  const post = await getFileBySlug('blog', slug.join('/'));
+  const recommendations = await getRecommendations(slug.join('/'));
 
   return {
     props: { ...post, recommendations },

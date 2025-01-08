@@ -10,6 +10,7 @@ module.exports = {
     'next',
     'next/core-web-vitals',
     'plugin:@typescript-eslint/recommended',
+    'plugin:@tanstack/eslint-plugin-query/recommended',
     'prettier',
   ],
   rules: {
@@ -23,6 +24,7 @@ module.exports = {
       'warn',
       { props: 'never', children: 'never' },
     ],
+    '@typescript-eslint/no-var-requires': 'off',
 
     //#region  //*=========== Unused Import ===========
     '@typescript-eslint/no-unused-vars': 'off',
